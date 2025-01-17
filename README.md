@@ -29,7 +29,7 @@ The module is include with a new menu in the Unreal Editor's main menu, call "Ed
 
 ![image](https://github.com/user-attachments/assets/e5cd3da7-1bab-4412-8c79-e35a4dd03c75)
 
-- Restart => Close and open the Editor (usefull when adding new menus and commands and watch what you did fastly).
+- Restart => Close and open the Editor (usefull when adding new menus and commands and see what you did fastly).
 - Rebuild => Close the Editor and your current IDE project's solution if open (WARNING : save your files before), delete the project's solution and Binaries and Intermediates folder, and launch the .uproject (that display the generation's choice pop-up of Unreal Engine).
 - Generate/Refresh IDE project => Generate IDE project's solution if doesn't exist or refresh it, then open in your current IDE (if not open yet).
 - Documentation => Open the documentation tool (here).
@@ -47,3 +47,9 @@ In order to add some menus and commands in the Unreal Engine Editor's menus and 
 - C) use the path name to extend the menu (toolbar == menu) and add command or submenu in it 
 
 ![image](https://github.com/user-attachments/assets/1a1e2186-ae14-4993-a865-18e6afb33bd4)
+
+# NOTE
+- If you want to use python script, store it in "Python" folder and use the same way in "RebuildProject" method to use it.
+- To see your added menus/commands in Unreal Editor, you need to refresh the it (like close then open the project).
+- The big part of the code was find in Unreal Engine source code, that means Epic Games Inc. is the owner and have all right on it (except python files).
+- Made on Unreal Engine 5.4 release. Didn't know if work on previous release.
