@@ -41,7 +41,10 @@ void FCustomEditorModule::ShutdownModule()
 
 void FCustomEditorModule::CreateEditorMenu()
 {
+	/// Get Editor's main menu to extend it
 	UToolMenu* MainMenu = ToolMenus->ExtendMenu("LevelEditor.MainMenu");
+
+	/// Get the current IDE's name if found, "IDE" by default
 	FText ShortIDEName = FSourceCodeNavigation::GetSelectedSourceCodeIDE();
 	if (ShortIDEName.ToString() == "None")
 		ShortIDEName = FText::FromString("IDE");
@@ -124,6 +127,7 @@ void FCustomEditorModule::AddToolBarCommands()
 	/// Add button on ToolBar 
 	UToolMenu* ToolbarMenu = ToolMenus->ExtendMenu("LevelEditor.LevelEditorToolBar.User");
 	FToolMenuSection& ToolbarSection = ToolbarMenu->FindOrAddSection("Custom");
+
 	ToolbarSection.AddEntry(
 		FToolMenuEntry::InitToolBarButton(
 			FName("Tool"),
@@ -208,7 +212,7 @@ void FCustomEditorModule::RebuildProject()
 
 void FCustomEditorModule::OpenSolution()
 {
-	// Create/Refresh code project
+	// Generate/Refresh code project
 	if (!FSourceCodeNavigation::IsCompilerAvailable())
 	{
 		// Attempt to trigger the tutorial if the user doesn't have a compiler installed for the project.
