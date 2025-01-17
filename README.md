@@ -40,4 +40,10 @@ In order to add some menus and commands in the Unreal Engine Editor's menus and 
 
 ![image](https://github.com/user-attachments/assets/f8e4d34f-89ec-48f5-93ef-6b91152a0664)
 
-- B) 
+- B) Now you can see some gear button and an "Edit menu" menu in Unreal Editor's menus and toolbars. When you click on it, this will display a new window that display information and the path name of the current location.
+
+![ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/939d8798-cb03-4df6-a703-573aef1178b1)
+
+- C) use the path name to extend the menu (toolbar == menu) and add command or submenu in it 
+
+![image](https://github.com/user-attachments/assets/1a1e2186-ae14-4993-a865-18e6afb33bd4)
