@@ -14,11 +14,13 @@ and add the CustomEditor module in the "Modules" section with the Type = Editor 
 
 ![image](https://github.com/user-attachments/assets/483d9127-3fd2-4ecf-9f7e-a0d3ea183894)
 
-- C) Open your project.Target.cs and projectEditor.Target.cs
+- C) Open your projectEditor.Target.cs
 
 ![image](https://github.com/user-attachments/assets/4e38cb8b-1368-4f3b-a50a-36513ac9d30b)
 
-and replace the line 'ExtraModuleNames.Add("YourProject");' by 'ExtraModuleNames.AddRange(new string[] { "UnrealProject", "CustomEditor" });' on both files
+and replace the line 
+- 'ExtraModuleNames.Add("YourProject");' by 
+- 'ExtraModuleNames.AddRange(new string[] { "UnrealProject", "CustomEditor" });'
 
 ![image](https://github.com/user-attachments/assets/9755a4d1-ac61-46d0-96f1-c702988a5b72)
 
