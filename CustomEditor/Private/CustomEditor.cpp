@@ -10,12 +10,21 @@
 #include "LevelEditorMenuContext.h"
 #include "UnrealEdGlobals.h"
 #include "GameFramework/GameUserSettings.h"
-#include "Widgets/SViewport.h"
+#include "EditorUtilityWidgetBlueprint.h"
+#include "EditorUtilitySubsystem.h"
+#include "Editor/Blutility/Classes/EditorUtilityWidget.h"
+#include "./../Plugins/Editor/EditorScriptingUtilities/Source/EditorScriptingUtilities/Public/EditorAssetLibrary.h"
+#include "Styling/CoreStyle.h"
+#include "Styling/SlateStyleRegistry.h"
+#include "UObject/UObjectGlobals.h"
+#include "CustomEditorSettings.h"
 #endif
 
-#define LOCTEXT_NAMESPACE "CustomEditorModule"
+#define LOCTEXT_NAMESPACE "CustomEditorModule" 
 
 #if !UE_BUILD_SHIPPING
+TSharedPtr<FSlateStyleSet> FCustomEditorModule::StyleSet = NULL;
+
 void FCustomEditorModule::StartupModule()
 {
 	/// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
@@ -27,8 +36,12 @@ void FCustomEditorModule::StartupModule()
 		return;
 	}
 
+	UCustomEditorSettings* Settings = GetMutableDefault<UCustomEditorSettings>();
+	Settings->InitSettings();
+	
 	CreateEditorMenu();
-	//AddToolBarCommand();
+	CreateCustomMenu();
+	AddToolBarCommands();
 }
 
 void FCustomEditorModule::ShutdownModule()
@@ -39,12 +52,10 @@ void FCustomEditorModule::ShutdownModule()
 		ToolMenus->UnregisterOwner(this);
 }
 
+#pragma region MainMenu
 void FCustomEditorModule::CreateEditorMenu()
 {
-	/// Get Editor's main menu to extend it
 	UToolMenu* MainMenu = ToolMenus->ExtendMenu("LevelEditor.MainMenu");
-
-	/// Get the current IDE's name if found, "IDE" by default
 	FText ShortIDEName = FSourceCodeNavigation::GetSelectedSourceCodeIDE();
 	if (ShortIDEName.ToString() == "None")
 		ShortIDEName = FText::FromString("IDE");
@@ -122,22 +133,6 @@ void FCustomEditorModule::CreateEditorMenu()
 	);
 }
 
-void FCustomEditorModule::AddToolBarCommands()
-{
-	/// Add button on ToolBar 
-	UToolMenu* ToolbarMenu = ToolMenus->ExtendMenu("LevelEditor.LevelEditorToolBar.User");
-	FToolMenuSection& ToolbarSection = ToolbarMenu->FindOrAddSection("Custom");
-
-	ToolbarSection.AddEntry(
-		FToolMenuEntry::InitToolBarButton(
-			FName("Tool"),
-			FExecuteAction::CreateStatic(&FCustomEditorModule::ToolAction),
-			INVTEXT("Tool"),
-			INVTEXT("The tool description"),
-			FSlateIcon(FAppStyle::GetAppStyleSetName(), "Icons.Warning"))
-	);
-}
-
 void FCustomEditorModule::RestartProject()
 {
 	// Check Editor can restart
@@ -185,15 +180,15 @@ void FCustomEditorModule::RebuildProject()
 
 	// Get python executable path
 	FString _pathPythonExe = FPaths::RootDir() + PATH_DIRECTORY_PYTHON_EXEC;
-	UE_LOG(LogCustomEditor, Display, TEXT("python: %s"), *_pathPythonExe);
+	//UE_LOG(LogCustomEditor, Warning, TEXT("python: %s"), *_pathPythonExe);
 	if (!FPaths::FileExists(_pathPythonExe))
 	{
 		UE_LOG(LogCustomEditor, Error, TEXT("Failed to find python exec. Abort rebuild"));
 		return;
 	}
 	// Get python script path
-	FString _pathPythonScript = FPaths::ProjectPluginsDir() + PATH_SCRIPT_PYTHON_REBUILD;
-	UE_LOG(LogCustomEditor, Display, TEXT("script: %s"), *_pathPythonScript);
+	FString _pathPythonScript = FPaths::ProjectDir() + PATH_SCRIPT_PYTHON_REBUILD;
+	//UE_LOG(LogCustomEditor, Warning, TEXT("script: %s"), *_pathPythonScript);
 	if (!FPaths::FileExists(_pathPythonScript))
 	{
 		UE_LOG(LogCustomEditor, Error, TEXT("Failed to find python script. Abort rebuild"));
@@ -212,7 +207,7 @@ void FCustomEditorModule::RebuildProject()
 
 void FCustomEditorModule::OpenSolution()
 {
-	// Generate/Refresh code project
+	// Create/Refresh code project
 	if (!FSourceCodeNavigation::IsCompilerAvailable())
 	{
 		// Attempt to trigger the tutorial if the user doesn't have a compiler installed for the project.
@@ -248,13 +243,129 @@ void FCustomEditorModule::OpenDocumentation()
 {
 	FString _url = FString(URL_DOCUMENTATION);
 	FPlatformProcess::LaunchURL(*_url, NULL, NULL);
-}
 
-void FCustomEditorModule::ToolAction()
+	UE_LOG(LogCustomEditor, Display, TEXT("Open documentation module"));
+}
+#pragma endregion
+
+#pragma region Custom
+void FCustomEditorModule::CreateCustomMenu()
 {
-	UE_LOG(LogCustomEditor, Display, TEXT("The tool action"));
+	UToolMenu* MainMenu = ToolMenus->ExtendMenu("LevelEditor.MainMenu");
+
+	/// Add the SubMenu "Custom"
+	UToolMenu* EditorMenu = MainMenu->AddSubMenu(
+		MainMenu->MenuOwner,
+		NAME_None,
+		FName("Custom"),
+		INVTEXT("Custom"),
+		INVTEXT("Custom Options")
+	);
+
+	/// Add the section "COMABT TOOL"
+	FToolMenuSection& Section = EditorMenu->AddSection(
+		"Custom tool",
+		INVTEXT("CUSTOM TOOL")
+	);
+
+	/// Add the command "Toggle"
+	Section.AddMenuEntry(
+		"ToggleCommand",
+		INVTEXT("Toggle"),
+		INVTEXT("Toggle tool"),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateStatic(&FCustomEditorModule::SetToggle),
+			FCanExecuteAction::CreateStatic(&FCustomEditorModule::CanExecute),
+			FIsActionChecked::CreateStatic(&FCustomEditorModule::SetToggleIsChecked)
+			),
+		EUserInterfaceActionType::ToggleButton
+	);
 }
 
+bool FCustomEditorModule::CanExecute()
+{
+	return true;
+}
+
+void FCustomEditorModule::SetToggle()
+{
+	UCustomEditorSettings* Settings = GetMutableDefault<UCustomEditorSettings>();
+	Settings->Toggle();
+
+	UE_LOG(LogCustomEditor, Display, TEXT("Toggle command"));
+}
+
+bool FCustomEditorModule::SetToggleIsChecked()
+{
+	return GetMutableDefault<UCustomEditorSettings>()->GetToggle();
+}
+#pragma endregion
+
+void FCustomEditorModule::AddToolBarCommands()
+{
+	// Add button on ToolBar 
+	UToolMenu* ToolbarMenu = ToolMenus->ExtendMenu("LevelEditor.LevelEditorToolBar.User");
+	FToolMenuSection& ToolbarSection = ToolbarMenu->FindOrAddSection("Custom");
+
+	// Register custom icon
+	StyleSet = MakeShareable(new FSlateStyleSet("CustomStyle"));
+	// Set paths to content folders to support loading assets that ship with the engine
+	StyleSet->SetCoreContentRoot(FPaths::EngineContentDir() / TEXT("Slate"));
+	// Register some brushes
+	const FVector2D Icon32x32(32.0f, 32.0f);
+	FString _path = FPaths::ProjectDir() / TEXT("Source/CustomEditor/Content/IconGithub.png");
+	StyleSet->Set("Custom.IconGithub", new FSlateImageBrush(_path, Icon32x32));
+	FSlateStyleRegistry::RegisterSlateStyle(*StyleSet.Get());
+
+	// Add Icon menu on toolbar
+	FToolMenuEntry IconMenu = FToolMenuEntry::InitComboButton(
+		FName("Icon"),
+		FToolUIActionChoice(),
+		FOnGetContent::CreateRaw(this, &FCustomEditorModule::GenerateEUWMenuWidget),
+		INVTEXT("Icon"),
+		INVTEXT("Icon options"),
+		FSlateIcon(FName("CustomStyle"), "Custom.IconGithub")
+	);
+	IconMenu.StyleNameOverride = "CalloutToolbar";
+	ToolbarSection.AddEntry(IconMenu);
+}
+
+#pragma region EUW
+TSharedRef<SWidget> FCustomEditorModule::GenerateEUWMenuWidget()
+{
+	if (ToolMenus->IsMenuRegistered("LevelEditor.LevelEditorToolBar.TechMenu"))
+		return ToolMenus->GenerateWidget("LevelEditor.LevelEditorToolBar.TechMenu", nullptr);
+
+	UToolMenu* TechMenu = ToolMenus->RegisterMenu("LevelEditor.LevelEditorToolBar.TechMenu");
+	{
+		// Add section "EditorUtilityWidget"
+		FToolMenuSection& EUWSection = TechMenu->AddSection("EUW", INVTEXT("EUW"));
+		// Add the command "EUW"
+		EUWSection.AddMenuEntry(
+			"EUWCommand",
+			INVTEXT("EUW"),
+			INVTEXT("EUW Tool"),
+			FSlateIcon(),
+			FUIAction(FExecuteAction::CreateStatic(&FCustomEditorModule::RunEUW, FString("Full reference to EUW")))
+		);
+	}
+
+	return ToolMenus->GenerateWidget(TechMenu);
+}
+
+void FCustomEditorModule::RunEUW(FString _EUWReference)
+{
+	UBlueprint* UMGBP = LoadObject<UBlueprint>(nullptr, *_EUWReference);
+	UEditorUtilityWidgetBlueprint* EditorWidget = Cast<UEditorUtilityWidgetBlueprint>(UMGBP);
+	if (EditorWidget)
+	{
+		UEditorUtilitySubsystem* EditorUtilitySubsystem = GEditor->GetEditorSubsystem<UEditorUtilitySubsystem>();
+		EditorUtilitySubsystem->SpawnAndRegisterTab(EditorWidget);
+	}
+
+	UE_LOG(LogCustomEditor, Display, TEXT("Run EUW"));
+}
+#pragma endregion
 #endif
 
 #undef LOCTEXT_NAMESPACE

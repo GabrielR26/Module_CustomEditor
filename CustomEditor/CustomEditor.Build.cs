@@ -19,7 +19,8 @@ public class CustomEditor : ModuleRules
                 "CoreUObject",
                 "Engine",
                 "Slate",
-                "SlateCore",               
+                "SlateCore",
+                "Json"
             }            
         );
         
@@ -27,11 +28,15 @@ public class CustomEditor : ModuleRules
         {
             PrivateDependencyModuleNames.AddRange(new string[]
             {
+                "EditorFramework",
                 "UnrealEd",
                 "GameProjectGeneration",
                 "MainFrame",
                 "LevelEditor",
                 "ToolMenus",
+                "Blutility",
+                "UMGEditor",
+                "EditorScriptingUtilities",
             });
         }
     }

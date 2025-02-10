@@ -9,6 +9,7 @@ project_name = "RobotHunter"
 dir_int = "Intermediate"
 dir_bin = "Binaries"
 visual_exe = "devenv.exe"
+rider_exe = "rider64.exe"
 unreal_exe = "UnrealEditor.exe"
 
 # Get root project path
@@ -21,6 +22,8 @@ try:
     processus = subprocess.check_output(["tasklist"], text=True)
     if visual_exe in processus:
         subprocess.run(["taskkill", "/F", "/IM", visual_exe], check=False)
+    if rider_exe in processus:
+        subprocess.run(["taskkill", "/F", "/IM", rider_exe], check=False)
 except Exception as e:
     print("Error in checking processus")
     os._exit(1)
@@ -29,7 +32,7 @@ except Exception as e:
 try:
     while True:
         processus = subprocess.check_output(["tasklist"], text=True)
-        if visual_exe and unreal_exe not in processus:
+        if (visual_exe or rider_exe) and unreal_exe not in processus:
             break
         time.sleep(0.2)
 except Exception as e:
