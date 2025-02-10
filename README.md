@@ -12,24 +12,33 @@
 
 and add the CustomEditor module in the "Modules" section with the Type = Editor : 
 
-![image](https://github.com/user-attachments/assets/483d9127-3fd2-4ecf-9f7e-a0d3ea183894)
+```cpp
+{
+   "Name": "CustomEditor",
+   "Type": "Editor",
+   "LoadingPhase": "Default"
+}
+```
 
 - C) Open your projectEditor.Target.cs
 
 ![image](https://github.com/user-attachments/assets/4e38cb8b-1368-4f3b-a50a-36513ac9d30b)
 
 and replace the line 
-- 'ExtraModuleNames.Add("YourProject");' by 
-- 'ExtraModuleNames.AddRange(new string[] { "UnrealProject", "CustomEditor" });'
-
-![image](https://github.com/user-attachments/assets/9755a4d1-ac61-46d0-96f1-c702988a5b72)
+```cpp
+ExtraModuleNames.Add("YourProject");
+```
+by 
+```cpp
+ExtraModuleNames.AddRange(new string[] { "UnrealProject", "CustomEditor" });
+```
 
 - D) Build the project's solution and launch your project. The module start now when the editor is update (= open) and add all menus and commands added. 
 
 # TOOL EDITOR
 The module is include with a new menu in the Unreal Editor's main menu, call "Editor" with few commands to help on developping Unreal project
 
-![image](https://github.com/user-attachments/assets/e5cd3da7-1bab-4412-8c79-e35a4dd03c75)
+![image](https://github.com/user-attachments/assets/27bb34f9-07e5-4fc0-ba8c-8140e097df07)
 
 - Restart => Close and open the Editor (usefull when adding new menus and commands and see what you did fastly).
 - Rebuild => Close the Editor and your current IDE project's solution if open (WARNING : save your files before), delete the project's solution and Binaries and Intermediates folder, and launch the .uproject (that display the generation's choice pop-up of Unreal Engine).
@@ -46,12 +55,24 @@ In order to add some menus and commands in the Unreal Engine Editor's menus and 
 
 ![ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/939d8798-cb03-4df6-a703-573aef1178b1)
 
-- C) use the path name to extend the menu (toolbar == menu) and add command or submenu in it 
+- C) Use the path name to extend the menu (toolbar == menu) and add command or submenu in it
+```cpp
+UToolMenu* MainMenu = ToolMenus->ExtendMenu("LevelEditor.MainMenu");
+```
 
-![image](https://github.com/user-attachments/assets/1a1e2186-ae14-4993-a865-18e6afb33bd4)
+- D) To use custom icon, you need to create your own style and apply it on your command. See exemple in the method on CustomEdditor.cpp : 
+```cpp
+void AddToolBarCommands();
+```
+- E) To persistently save your data (bool, int, ...), save it in persistent file (.json, ...) and save/load it has your need. See some exemple in class CustomEditorSettings.
+
+- F) To launch 'EditorUtilityWidget' from your custom command, use the EditorAssetLibrary. See exemple in the method on CustomEdditor.cpp : 
+```cpp
+static void RunEUW(FString _EUWReference);
+```
 
 # NOTE
 - If you want to use python script, store it in "Python" folder and use the same way in "RebuildProject" method to use it.
-- To see your added menus/commands in Unreal Editor, you need to refresh the it (like close then open the project).
-- The big part of the code was find in Unreal Engine source code, that means Epic Games Inc. is the owner and have all right on it (except python files).
-- Made on Unreal Engine 5.4 release. Didn't know if work on previous release.
+- To see your added menus/commands in Unreal Editor, you need to refresh it, like using the restart command.
+- The big part of the code was find in Unreal Engine source code, so owning by Epic Games Inc.
+- Made on Unreal Engine 5.4 release. Don't know if work on previous release.
